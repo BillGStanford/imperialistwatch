@@ -1,18 +1,28 @@
 // src/components/Navbar.js
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Hammer, Shield, Users, Globe, TrendingUp, AlertTriangle, Newspaper } from 'lucide-react';
+import {
+  Menu,
+  X,
+  Hammer,
+  Shield,
+  Users,
+  Globe,
+  TrendingUp,
+  AlertTriangle,
+  Newspaper,
+} from 'lucide-react';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
   const navItems = [
-    { name: 'HOME', path: '/', icon: Hammer },
-    { name: 'ABOUT', path: '/about', icon: Shield },
-    { name: 'EXPOSÉ', path: '/expose', icon: Users },
-    { name: "News", path: '/news', icon: Newspaper },
-    { name: "Map of Crimes", path: '/map-of-crimes.html', icon: Globe }
+    { name: 'HOME', path: '/', icon: Hammer, external: false },
+    { name: 'ABOUT', path: '/about', icon: Shield, external: false },
+    { name: 'EXPOSÉ', path: '/expose', icon: Users, external: false },
+    { name: 'News', path: '/news', icon: Newspaper, external: false },
+    { name: 'Map of Crimes', path: '/map-of-crimes.html', icon: Globe, external: true },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -24,14 +34,19 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="relative">
-              <Hammer className="text-revolutionary-red-600 group-hover:text-revolutionary-red-400 transition-colors" size={32} />
+              <Hammer
+                className="text-revolutionary-red-600 group-hover:text-revolutionary-red-400 transition-colors"
+                size={32}
+              />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-revolutionary-red-600 rounded-full animate-pulse"></div>
             </div>
             <div>
               <h1 className="text-2xl font-black revolutionary-text">
                 IMPERIALIST<span className="text-revolutionary-red-400">WATCH</span>
               </h1>
-              <p className="text-xs text-revolutionary-red-400 font-bold">EXPOSING CAPITALIST CRIMES</p>
+              <p className="text-xs text-revolutionary-red-400 font-bold">
+                EXPOSING CAPITALIST CRIMES
+              </p>
             </div>
           </Link>
 
@@ -39,7 +54,18 @@ const Navbar = () => {
           <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => {
               const Icon = item.icon;
-              return (
+              return item.external ? (
+                <a
+                  key={item.name}
+                  href={item.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-bold text-sm transition-all duration-300 text-gray-300 hover:text-revolutionary-red-400 hover:bg-revolutionary-red-900/30"
+                >
+                  <Icon size={18} />
+                  <span>{item.name}</span>
+                </a>
+              ) : (
                 <Link
                   key={item.name}
                   to={item.path}
@@ -82,7 +108,18 @@ const Navbar = () => {
             <div className="px-4 py-6 space-y-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                return (
+                return item.external ? (
+                  <a
+                    key={item.name}
+                    href={item.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg font-bold text-sm transition-all duration-300 text-gray-300 hover:text-revolutionary-red-400 hover:bg-revolutionary-red-900/30"
+                  >
+                    <Icon size={20} />
+                    <span>{item.name}</span>
+                  </a>
+                ) : (
                   <Link
                     key={item.name}
                     to={item.path}
