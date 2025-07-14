@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0a0a0a;
+    color: #ffffff;
+  }
+}
+
+@layer components {
+  .revolutionary-bg {
+    background: linear-gradient(135deg, #7f1d1d 0%, #1f2937 25%, #dc2626 50%, #1f2937 75%, #7f1d1d 100%);
+    background-size: 400% 400%;
+    animation: revolutionary-gradient 15s ease infinite;
+  }
+
+  .revolutionary-text {
+    background: linear-gradient(135deg, #ef4444, #dc2626, #b91c1c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+    text-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+  }
+
+  .revolutionary-border {
+    border: 2px solid #dc2626;
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+  }
+
+  .revolutionary-card {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.05));
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
+
+  .revolutionary-button {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    border: 1px solid #ef4444;
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+  }
+
+  .revolutionary-button:hover {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
+  }
+
+  .revolutionary-glow {
+    box-shadow: 0 0 50px rgba(239, 68, 68, 0.4);
+  }
+
+  .hammer-sickle {
+    color: #dc2626;
+    filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+  }
+
+  .revolutionary-pulse {
+    animation: revolutionary-pulse 2s ease-in-out infinite;
+  }
+
+  .revolutionary-float {
+    animation: revolutionary-float 6s ease-in-out infinite;
+  }
+}
+
+@keyframes revolutionary-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes revolutionary-pulse {
+  0%, 100% { 
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes revolutionary-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dc2626;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ef4444;
+}

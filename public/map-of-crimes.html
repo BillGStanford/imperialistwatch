@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Crimes Map - ImperialistWatch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a0000 0%, #2d0a0a 25%, #1a0000 50%, #0a0000 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .revolutionary-text {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+        }
+
+        .revolutionary-glow {
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 2px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+
+        .map-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .world-map {
+            width: 100%;
+            height: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .country {
+            fill: #444;
+            stroke: #666;
+            stroke-width: 0.5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .country:hover {
+            fill: #ef4444;
+            stroke: #dc2626;
+            stroke-width: 2;
+            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8));
+        }
+
+        .country.has-data {
+            fill: #7f1d1d;
+        }
+
+        .country.has-data:hover {
+            fill: #ef4444;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            pointer-events: none;
+            z-index: 1000;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a0000 0%, #2d0a0a 100%);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.1);
+        }
+
+        .crime-section {
+            margin-bottom: 25px;
+        }
+
+        .crime-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #ef4444;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .crime-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+        }
+
+        .crime-stats {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ef4444;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            color: #ef4444;
+            font-weight: 800;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .no-data { background: #444; }
+        .has-data { background: #7f1d1d; }
+        .active-hover { background: #ef4444; }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                width: 95%;
+            }
+            
+            .legend {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="revolutionary-text">**GLOBAL CRIMES MAP**</h1>
+        <p>Interactive Archive of Capitalist Crimes by Country</p>
+        <p>
+            <a href="http://" target="_blank" rel="noopener noreferrer">Back Home</a>
+        </p>
+    </div>
+
+    <div class="map-container">
+        <svg class="world-map" viewBox="0 0 1000 500">
+            <!-- Simplified world map with major countries -->
+            <!-- United States -->
+            <path class="country has-data" data-country="United States" d="M200 200 L350 200 L350 270 L200 270 Z"/>
+            
+            <!-- China -->
+            <path class="country has-data" data-country="China" d="L700 180 L800 180 L800 250 L700 250 Z"/>
+            
+            <!-- Russia -->
+            <path class="country has-data" data-country="Russia" d="M400 120 L750 120 L750 180 L400 180 Z"/>
+            
+            <!-- Brazil -->
+            <path class="country has-data" data-country="Brazil" d="M300 320 L400 320 L400 420 L300 420 Z"/>
+            
+            <!-- India -->
+            <path class="country has-data" data-country="India" d="M650 250 L720 250 L720 320 L650 320 Z"/>
+            
+            <!-- Germany -->
+            <path class="country has-data" data-country="Germany" d="M480 180 L520 180 L520 220 L480 220 Z"/>
+            
+            <!-- United Kingdom -->
+            <path class="country has-data" data-country="United Kingdom" d="M450 160 L480 160 L480 190 L450 190 Z"/>
+            
+            <!-- France -->
+            <path class="country has-data" data-country="France" d="M460 190 L500 190 L500 230 L460 230 Z"/>
+            
+            <!-- Japan -->
+            <path class="country has-data" data-country="Japan" d="M820 200 L850 200 L850 240 L820 240 Z"/>
+            
+            <!-- Australia -->
+            <path class="country has-data" data-country="Australia" d="M750 350 L850 350 L850 420 L750 420 Z"/>
+            
+            <!-- Canada -->
+            <path class="country has-data" data-country="Canada" d="M150 100 L400 100 L400 170 L150 170 Z"/>
+            
+            <!-- Mexico -->
+            <path class="country has-data" data-country="Mexico" d="M150 250 L250 250 L250 310 L150 310 Z"/>
+            
+            <!-- Argentina -->
+            <path class="country has-data" data-country="Argentina" d="M280 400 L340 400 L340 480 L280 480 Z"/>
+            
+            <!-- South Africa -->
+            <path class="country has-data" data-country="South Africa" d="M520 380 L580 380 L580 440 L520 440 Z"/>
+            
+            <!-- Nigeria -->
+            <path class="country has-data" data-country="Nigeria" d="M480 280 L520 280 L520 320 L480 320 Z"/>
+            
+            <!-- Add more countries as needed -->
+        </svg>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color no-data"></div>
+                <span>No Data Available</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color has-data"></div>
+                <span>Documented Crimes</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color active-hover"></div>
+                <span>Hover/Selected</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title revolutionary-text" id="modal-title">Country Name</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-body">
+                <!-- Content will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Crime data for each country
+        const crimeData = {
+            "United States": {
+                title: "United States of America",
+                crimes: [
+                    {
+                        title: "Corporate Exploitation",
+                        description: "Systematic wage theft, union busting, and worker exploitation by multinational corporations. Amazon, Walmart, and other giants suppress wages while executives earn millions.",
+                        stats: {
+                            "Workers in poverty": "13.4 million",
+                            "CEO-to-worker pay ratio": "351:1",
+                            "Union membership decline": "60% since 1983"
+                        }
+                    },
+                    {
+                        title: "Healthcare Apartheid",
+                        description: "Privatized healthcare system causing 45,000 deaths annually due to lack of insurance. Medical bankruptcies destroy working families while insurance companies profit.",
+                        stats: {
+                            "Annual deaths from lack of insurance": "45,000",
+                            "Medical bankruptcies": "530,000 annually",
+                            "Uninsured Americans": "27.5 million"
+                        }
+                    },
+                    {
+                        title: "Imperialist Wars",
+                        description: "Endless military interventions for corporate profits. Over $6 trillion spent on wars while infrastructure crumbles and social programs are cut.",
+                        stats: {
+                            "Military spending": "$778 billion annually",
+                            "War casualties (Iraq/Afghanistan)": "1+ million",
+                            "Military bases worldwide": "800+"
+                        }
+                    }
+                ]
+            },
+            "China": {
+                title: "People's Republic of China",
+                crimes: [
+                    {
+                        title: "State Capitalism",
+                        description: "Authoritarian capitalism disguised as socialism. Billionaires multiply while workers face harsh conditions in factories producing goods for Western consumption.",
+                        stats: {
+                            "Chinese billionaires": "1,058",
+                            "Factory worker average wage": "$3.60/hour",
+                            "Work-related deaths": "38,000 annually"
+                        }
+                    },
+                    {
+                        title: "Environmental Destruction",
+                        description: "Massive pollution from unregulated industrial production. Air quality in major cities poses severe health risks to millions of workers.",
+                        stats: {
+                            "CO2 emissions": "30% of global total",
+                            "Air pollution deaths": "1.6 million annually",
+                            "Polluted water sources": "70% of rivers"
+                        }
+                    }
+                ]
+            },
+            "Russia": {
+                title: "Russian Federation",
+                crimes: [
+                    {
+                        title: "Oligarch Capitalism",
+                        description: "Post-Soviet privatization created extreme wealth concentration. Oligarchs control resources while workers face poverty and repression.",
+                        stats: {
+                            "Wealth held by top 1%": "74.5%",
+                            "Billionaire wealth": "$640 billion",
+                            "Poverty rate": "12.6%"
+                        }
+                    },
+                    {
+                        title: "Imperialist Aggression",
+                        description: "Military interventions and territorial expansion serve capitalist interests while devastating working-class communities.",
+                        stats: {
+                            "Military spending": "$65.9 billion",
+                            "Conflict casualties": "500,000+",
+                            "Refugee displacement": "6+ million"
+                        }
+                    }
+                ]
+            },
+            "Brazil": {
+                title: "Federative Republic of Brazil",
+                crimes: [
+                    {
+                        title: "Amazon Destruction",
+                        description: "Capitalist exploitation of the Amazon rainforest for profit. Deforestation accelerates while indigenous communities face violence and displacement.",
+                        stats: {
+                            "Amazon deforestation": "11,568 km² annually",
+                            "Indigenous lands under threat": "300+ territories",
+                            "Environmental activists killed": "20+ annually"
+                        }
+                    },
+                    {
+                        title: "Extreme Inequality",
+                        description: "Vast wealth gaps maintained through structural violence. Favelas expand while billionaires accumulate unprecedented wealth.",
+                        stats: {
+                            "Wealth inequality (Gini)": "0.608",
+                            "Population in poverty": "27.5 million",
+                            "Billionaire wealth growth": "15% annually"
+                        }
+                    }
+                ]
+            },
+            "India": {
+                title: "Republic of India",
+                crimes: [
+                    {
+                        title: "Caste-Based Exploitation",
+                        description: "Ancient hierarchies reinforced by capitalism. Dalits and lower castes face systematic discrimination while upper castes accumulate wealth.",
+                        stats: {
+                            "Dalits in population": "200 million",
+                            "Crimes against Dalits": "45,000 annually",
+                            "Wealth held by top 1%": "40.5%"
+                        }
+                    },
+                    {
+                        title: "Farmer Suicides",
+                        description: "Neoliberal policies drive small farmers to suicide. Corporate agriculture destroys traditional farming while rural communities suffer.",
+                        stats: {
+                            "Farmer suicides": "10,000 annually",
+                            "Agricultural debt": "$97 billion",
+                            "Rural poverty rate": "25.7%"
+                        }
+                    }
+                ]
+            },
+            "Germany": {
+                title: "Federal Republic of Germany",
+                crimes: [
+                    {
+                        title: "Austerity Imperialism",
+                        description: "EU austerity policies imposed on Southern Europe benefit German capital while devastating Greek, Spanish, and Italian workers.",
+                        stats: {
+                            "Greek GDP decline": "25% (2010-2018)",
+                            "Youth unemployment (South EU)": "35%+",
+                            "German trade surplus": "$310 billion"
+                        }
+                    },
+                    {
+                        title: "Arms Export Profits",
+                        description: "Major arms exporter fueling conflicts worldwide. Weapons sales to authoritarian regimes generate profits while civilians suffer.",
+                        stats: {
+                            "Arms exports": "$9.3 billion annually",
+                            "Weapons to conflict zones": "60% of exports",
+                            "Defense industry profits": "8% annual growth"
+                        }
+                    }
+                ]
+            }
+        };
+
+        // Tooltip functionality
+        const tooltip = document.getElementById('tooltip');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+
+        document.querySelectorAll('.country').forEach(country => {
+            country.addEventListener('mouseenter', function(e) {
+                const countryName = this.getAttribute('data-country');
+                const hasData = crimeData[countryName] ? 'Documented Crimes' : 'No Data Available';
+                
+                tooltip.innerHTML = `<strong>${countryName}</strong><br>${hasData}`;
+                tooltip.style.opacity = '1';
+                
+                updateTooltipPosition(e);
+            });
+
+            country.addEventListener('mousemove', updateTooltipPosition);
+
+            country.addEventListener('mouseleave', function() {
+                tooltip.style.opacity = '0';
+            });
+
+            country.addEventListener('click', function(e) {
+                const countryName = this.getAttribute('data-country');
+                if (crimeData[countryName]) {
+                    openModal(countryName);
+                }
+            });
+        });
+
+        function updateTooltipPosition(e) {
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            let left = e.pageX + 15;
+            let top = e.pageY - 10;
+            
+            if (left + tooltipRect.width > viewportWidth) {
+                left = e.pageX - tooltipRect.width - 15;
+            }
+            
+            if (top + tooltipRect.height > viewportHeight) {
+                top = e.pageY - tooltipRect.height - 10;
+            }
+            
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+        }
+
+        function openModal(countryName) {
+            const data = crimeData[countryName];
+            if (!data) return;
+
+            modalTitle.textContent = data.title;
+            
+            let content = '';
+            data.crimes.forEach(crime => {
+                content += `
+                    <div class="crime-section">
+                        <h3 class="crime-title">${crime.title}</h3>
+                        <p class="crime-description">${crime.description}</p>
+                        <div class="crime-stats">
+                            ${Object.entries(crime.stats).map(([key, value]) => 
+                                `<div class="stat-item">
+                                    <span>${key}:</span>
+                                    <span class="stat-value">${value}</span>
+                                </div>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            modalBody.innerHTML = content;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
